@@ -1,0 +1,84 @@
+# ============================================================
+# Monitor STCW — Acordo Bilateral Marítimo Brasil-Portugal
+# Edita este ficheiro para ajustar keywords e configurações
+# ============================================================
+
+# Palavras-chave de pesquisa
+# O monitor pesquisa cada keyword individualmente em cada fonte
+keywords:
+
+  # Termos técnicos marítimos (núcleo)
+  primary:
+    - "STCW"
+    - "endosso de certificado"
+    - "endosso de certificados marítimos"
+    - "reconhecimento mútuo"
+    - "certificação marítima"
+    - "certificado marítimo"
+    - "aquaviário"
+    - "gente do mar"
+    - "marinha mercante"
+
+  # Acordo bilateral
+  bilateral:
+    - "acordo marítimo"
+    - "acordo bilateral marítimo"
+    - "reconhecimento recíproco de certificados"
+    - "Convenção STCW"
+    - "Manila"                       # Emendas de Manila à STCW
+
+  # Autoridades competentes
+  authorities:
+    - "DPC"                          # Diretoria de Portos e Costas (Brasil)
+    - "Diretoria de Portos e Costas"
+    - "DGRM"                         # Direção-Geral de Recursos Marítimos (Portugal)
+    - "Direção-Geral de Recursos Marítimos"
+    - "ANTAQ"
+
+  # Linguagem de decreto / ratificação
+  legal:
+    - "promulga"                     # DOU usa para acordos internacionais
+    - "ratifica"
+    - "aprova o acordo"
+
+# Para um resultado ser considerado relevante, tem de conter
+# pelo menos um termo de 'primary' OU 'authorities'
+# E conter referência ao país parceiro
+match_rules:
+  require_any_of_groups: ["primary", "authorities"]
+  require_country_pair: true         # filtra só se mencionar Brasil+Portugal juntos
+                                     # (desliga se quiser resultados mais amplos)
+
+# Fontes a monitorizar
+sources:
+  dou:
+    enabled: true
+    name: "Diário Oficial da União (Brasil)"
+    country: "BR"
+    url_search: "https://www.in.gov.br/consulta/-/busca-oficial"
+    sections:
+      - "do1"   # Secção 1 — actos normativos
+      - "do2"   # Secção 2 — actos de pessoal
+      - "doe"   # Extra
+  dre:
+    enabled: true
+    name: "Diário da República (Portugal)"
+    country: "PT"
+    feeds:
+      serie1: "https://files.diariodarepublica.pt/rss/serie1.xml"
+      serie2: "https://files.diariodarepublica.pt/rss/serie2.xml"
+
+# Agendamento (usado localmente — GitHub Actions tem o seu próprio cron)
+schedule:
+  hour_utc: 8      # 08:00 UTC = 09:00 Lisboa / 05:00 Brasília
+
+# Armazenamento
+storage:
+  csv_file: "data/resultados.csv"
+  log_file: "data/log.csv"          # registo diário incluindo dias sem resultados
+
+# Notificação por email
+email:
+  enabled: true
+  subject_prefix: "[STCW Monitor]"
+  only_on_new_results: true         # false = envia email diário mesmo sem resultados
