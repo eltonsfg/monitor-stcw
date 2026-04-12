@@ -36,7 +36,7 @@ RSS_FEEDS = [
 ]
 
 # Querido Diário API (Brasil.io / Open Knowledge Brasil) — fallback aberto
-QD_API = "https://queridodiario.ok.org.br/api/gazettes"
+QD_API = "https://api.queridodiario.ok.org.br/gazettes"
 
 
 def fetch() -> list[dict]:
@@ -55,13 +55,13 @@ def fetch() -> list[dict]:
         except Exception as e:
             print(f"  [DOU] RSS erro '{feed['label']}': {e}")
 
-    # Tentativa 2: Querido Diário (API aberta, sem bloqueio)
-    if not rss_ok or len(results) == 0:
-        try:
-            items = _fetch_querido_diario(seen_urls)
-            results.extend(items)
-        except Exception as e:
-            print(f"  [DOU] Querido Diario erro: {e}")
+    # Tentativa 2: Querido Diário (API aberta, acessível fora do Brasil)
+    # Sempre corre — complementa o RSS mesmo quando RSS funciona
+    try:
+        items = _fetch_querido_diario(seen_urls)
+        results.extend(items)
+    except Exception as e:
+        print(f"  [DOU] Querido Diario erro: {e}")
 
     print(f"  [DOU] Total relevantes: {len(results)}")
     return results

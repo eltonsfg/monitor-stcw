@@ -2,6 +2,7 @@
 Monitor STCW — Acordo Marítimo Bilateral Brasil-Portugal
 Orquestrador principal: recolhe → filtra → guarda → notifica
 """
+import os
 import sys
 import yaml
 from pathlib import Path
@@ -11,6 +12,14 @@ from datetime import datetime, timezone
 CONFIG = yaml.safe_load(
     (Path(__file__).parent.parent / "config.yaml").read_text(encoding="utf-8")
 )
+
+# Quando DISABLE_BR_SOURCES=true (GitHub Actions), desactivar fontes brasileiras
+# Railway (São Paulo) trata das fontes BR com IP local
+_DISABLE_BR = os.environ.get("DISABLE_BR_SOURCES", "").lower() == "true"
+if _DISABLE_BR:
+    for src in ("dou", "dpc", "ciaga"):
+        if src in CONFIG["sources"]:
+            CONFIG["sources"][src]["enabled"] = False
 
 def main():
     print(f"\n{'='*60}")

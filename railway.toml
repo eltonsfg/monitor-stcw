@@ -1,0 +1,8 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "bash run.sh"
+cronSchedule = "0 8 * * *"
+region = "sa-east-1"
+restartPolicyType = "never"

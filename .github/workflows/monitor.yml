@@ -1,21 +1,27 @@
-name: Monitor STCW — Acordo Marítimo Brasil-Portugal
+name: Monitor STCW — Fontes Portuguesas (DRE + DGRM)
 
 on:
   schedule:
-    - cron: "0 8 * * *"   # 08:00 UTC diário = 09:00 Lisboa / 05:00 Brasília
-  workflow_dispatch:        # execução manual a qualquer momento
+    - cron: "30 8 * * *"  # 08:30 UTC — 30 min depois do Railway (BR)
+  workflow_dispatch:
 
 jobs:
   monitor:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
 
     permissions:
-      contents: write       # necessário para git push dos resultados
+      contents: write
+
+    env:
+      # Desactivar fontes brasileiras — Railway (São Paulo) trata disso
+      DISABLE_BR_SOURCES: "true"
 
     steps:
       - name: Checkout repositório
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # necessário para git pull antes do push
 
       - name: Configurar Python 3.11
         uses: actions/setup-python@v5
@@ -23,20 +29,21 @@ jobs:
           python-version: "3.11"
           cache: "pip"
 
-      - name: Instalar dependências Python
+      - name: Instalar dependências
         run: pip install -r requirements.txt
 
-      - name: Executar monitor
+      - name: Executar monitor (DRE + DGRM)
         env:
           EMAIL_FROM:     ${{ secrets.EMAIL_FROM }}
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
           EMAIL_TO:       ${{ secrets.EMAIL_TO }}
         run: python -m scraper.main
 
-      - name: Guardar resultados no repositório
+      - name: Guardar resultados
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase --autostash origin main || true
           git add data/resultados.csv data/log.csv 2>/dev/null || true
-          git diff --cached --quiet || git commit -m "chore: resultados $(date -u +%Y-%m-%d)"
+          git diff --cached --quiet || git commit -m "chore: resultados $(date -u +%Y-%m-%d) [GH-Actions/PT]"
           git push

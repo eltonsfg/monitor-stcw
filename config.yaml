@@ -68,7 +68,7 @@ sources:
       serie1: "https://files.diariodarepublica.pt/rss/serie1.xml"
       serie2: "https://files.diariodarepublica.pt/rss/serie2.xml"
   dpc:
-    enabled: false   # servidores .mil.br bloqueiam IPs fora do Brasil (timeout)
+    enabled: true
     name: "DPC — Diretoria de Portos e Costas (Brasil)"
     country: "BR"
     pages:
@@ -76,7 +76,7 @@ sources:
       - "https://www.dpc.mar.mil.br/pt-br/noticias"
       - "https://www.dpc.mar.mil.br/pt-br/aquaviarios/habilitacao-aquaviaria"
   ciaga:
-    enabled: false   # servidores .mil.br bloqueiam IPs fora do Brasil (timeout)
+    enabled: true
     name: "CIAGA — Centro de Instrução Almirante Graça Aranha (Brasil)"
     country: "BR"
     pages:
