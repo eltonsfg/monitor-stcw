@@ -1,0 +1,6 @@
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/bin:/bin
+
+# Monitor STCW — 08:00 UTC diário (05:00 Brasília / 09:00 Lisboa)
+0 8 * * * cd /app && bash run.sh >> /var/log/monitor.log 2>&1
+

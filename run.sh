@@ -1,15 +1,18 @@
 #!/bin/bash
-# Script principal para Railway (São Paulo)
+# Monitor STCW — runner principal
 # Corre o monitor e faz push dos resultados para GitHub
 set -e
 
-# Configurar git com token de acesso (GITHUB_TOKEN injectado pelo Railway)
+echo "=== $(date -u '+%Y-%m-%d %H:%M UTC') ==="
+
+# Configurar git com token de acesso
 if [ -n "$GITHUB_TOKEN" ]; then
-    git config user.name  "railway-bot"
-    git config user.email "railway-bot@stcw.pt"
+    git config user.name  "monitor-stcw-bot"
+    git config user.email "monitor-bot@stcw.pt"
     git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/eltonsfg/monitor-stcw.git"
-    # Garantir que estamos actualizados
-    git pull --rebase --autostash origin main 2>/dev/null || true
+    # Sincronizar com o remoto antes de escrever
+    git fetch origin main --quiet
+    git reset --hard origin/main --quiet
 fi
 
 # Executar o monitor
@@ -18,6 +21,11 @@ python -m scraper.main
 # Guardar resultados no GitHub
 if [ -n "$GITHUB_TOKEN" ]; then
     git add data/resultados.csv data/log.csv 2>/dev/null || true
-    git diff --cached --quiet || git commit -m "chore: resultados $(date -u +%Y-%m-%d) [Railway/BR]"
-    git push origin main 2>/dev/null || echo "[git push] sem alterações para enviar"
+    if git diff --cached --quiet; then
+        echo "[git] Sem novas alterações para guardar"
+    else
+        git commit -m "chore: resultados $(date -u +%Y-%m-%d) [Fly.io/GRU]"
+        git push origin main
+        echo "[git] Resultados guardados no GitHub"
+    fi
 fi
