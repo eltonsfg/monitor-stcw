@@ -1,8 +1,8 @@
-name: Monitor STCW — Fontes Portuguesas (DRE + DGRM)
+name: Monitor STCW — DRE + DGRM (Portugal)
 
 on:
   schedule:
-    - cron: "30 8 * * *"  # 08:30 UTC — 30 min depois do Railway (BR)
+    - cron: "0 8 * * *"   # 08:00 UTC diário = 09:00 Lisboa
   workflow_dispatch:
 
 jobs:
@@ -13,17 +13,13 @@ jobs:
     permissions:
       contents: write
 
-    env:
-      # Desactivar fontes brasileiras — Railway (São Paulo) trata disso
-      DISABLE_BR_SOURCES: "true"
-
     steps:
-      - name: Checkout repositório
+      - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # necessário para git pull antes do push
+          fetch-depth: 0
 
-      - name: Configurar Python 3.11
+      - name: Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -32,7 +28,7 @@ jobs:
       - name: Instalar dependências
         run: pip install -r requirements.txt
 
-      - name: Executar monitor (DRE + DGRM)
+      - name: Executar monitor
         env:
           EMAIL_FROM:     ${{ secrets.EMAIL_FROM }}
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
@@ -45,5 +41,5 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git pull --rebase --autostash origin main || true
           git add data/resultados.csv data/log.csv 2>/dev/null || true
-          git diff --cached --quiet || git commit -m "chore: resultados $(date -u +%Y-%m-%d) [GH-Actions/PT]"
+          git diff --cached --quiet || git commit -m "chore: resultados $(date -u +%Y-%m-%d)"
           git push

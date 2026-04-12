@@ -56,16 +56,12 @@ def fetch() -> list[dict]:
 
 def _scrape_page(label: str, url: str, seen_urls: set) -> list[dict]:
     """Extrai links e títulos de uma página da DPC."""
-    for attempt in range(2):
-        try:
-            resp = requests.get(url, headers=HEADERS, timeout=40, verify=False)
-            resp.raise_for_status()
-            break
-        except Exception as e:
-            if attempt == 1:
-                print(f"  [DPC] HTTP erro em {url}: {e}")
-                return []
-            time.sleep(3)
+    try:
+        resp = requests.get(url, headers=HEADERS, timeout=12, verify=False)
+        resp.raise_for_status()
+    except Exception as e:
+        print(f"  [DPC] HTTP erro em {url}: {e}")
+        return []
 
     html = resp.text
     matched = []
