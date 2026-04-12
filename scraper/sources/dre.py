@@ -70,7 +70,7 @@ def _fetch_feed(feed_name: str, url: str) -> list[dict]:
             "matched_keywords": ", ".join(keywords),
         })
 
-    print(f"  [{feed_name}] {len(items)} publicações → {len(matched)} relevantes")
+    print(f"  [{feed_name}] {len(items)} publicacoes -> {len(matched)} relevantes")
     return matched
 
 

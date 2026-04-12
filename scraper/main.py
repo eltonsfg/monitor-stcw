@@ -18,30 +18,67 @@ def main():
     print(f"{'='*60}\n")
 
     all_results = []
-    dou_checked = False
-    dre_checked = False
+    sources_checked = {}
 
     # --- DOU (Brasil) ---
     if CONFIG["sources"]["dou"]["enabled"]:
-        print("[1/2] Pesquisando DOU (Brasil)...")
+        print("[1/5] Pesquisando DOU (Brasil)...")
         try:
             from scraper.sources import dou
-            dou_items = dou.fetch()
-            all_results.extend(dou_items)
-            dou_checked = True
+            items = dou.fetch()
+            all_results.extend(items)
+            sources_checked["dou"] = True
         except Exception as e:
             print(f"  [DOU] ERRO: {e}")
+            sources_checked["dou"] = False
 
     # --- DRE (Portugal) ---
     if CONFIG["sources"]["dre"]["enabled"]:
-        print("\n[2/2] Pesquisando DRE (Portugal)...")
+        print("\n[2/5] Pesquisando DRE (Portugal)...")
         try:
             from scraper.sources import dre
-            dre_items = dre.fetch()
-            all_results.extend(dre_items)
-            dre_checked = True
+            items = dre.fetch()
+            all_results.extend(items)
+            sources_checked["dre"] = True
         except Exception as e:
             print(f"  [DRE] ERRO: {e}")
+            sources_checked["dre"] = False
+
+    # --- DPC (Brasil) ---
+    if CONFIG["sources"].get("dpc", {}).get("enabled", False):
+        print("\n[3/5] Pesquisando DPC — Diretoria de Portos e Costas (Brasil)...")
+        try:
+            from scraper.sources import dpc
+            items = dpc.fetch()
+            all_results.extend(items)
+            sources_checked["dpc"] = True
+        except Exception as e:
+            print(f"  [DPC] ERRO: {e}")
+            sources_checked["dpc"] = False
+
+    # --- CIAGA (Brasil) ---
+    if CONFIG["sources"].get("ciaga", {}).get("enabled", False):
+        print("\n[4/5] Pesquisando CIAGA — Centro de Instrução (Brasil)...")
+        try:
+            from scraper.sources import ciaga
+            items = ciaga.fetch()
+            all_results.extend(items)
+            sources_checked["ciaga"] = True
+        except Exception as e:
+            print(f"  [CIAGA] ERRO: {e}")
+            sources_checked["ciaga"] = False
+
+    # --- DGRM (Portugal) ---
+    if CONFIG["sources"].get("dgrm", {}).get("enabled", False):
+        print("\n[5/5] Pesquisando DGRM — Direção-Geral de Recursos Marítimos (Portugal)...")
+        try:
+            from scraper.sources import dgrm
+            items = dgrm.fetch()
+            all_results.extend(items)
+            sources_checked["dgrm"] = True
+        except Exception as e:
+            print(f"  [DGRM] ERRO: {e}")
+            sources_checked["dgrm"] = False
 
     print(f"\nTotal encontrado: {len(all_results)} publicação(ões) relevante(s)")
 
@@ -59,34 +96,34 @@ def main():
     email_cfg = CONFIG.get("email", {})
 
     if email_cfg.get("enabled") and all_results:
-        # Só envia email para resultados novos (não duplicados)
-        from storage.csv_sync import load_existing_urls
-        # Os novos são os que foram efectivamente guardados agora
         new_only = all_results[:saved] if saved > 0 else []
-
         if new_only or not email_cfg.get("only_on_new_results", True):
             from notifier.email_alert import send_alert
             email_sent = send_alert(new_only or all_results, total_today=len(all_results))
 
     # --- Log diário ---
     append_log(log_path, {
-        "dou_checked": dou_checked,
-        "dre_checked": dre_checked,
+        **{f"{k}_checked": v for k, v in sources_checked.items()},
+        # compatibilidade retroactiva
+        "dou_checked": sources_checked.get("dou", False),
+        "dre_checked": sources_checked.get("dre", False),
         "new_results": saved,
         "total_results": len(all_results),
         "email_sent": email_sent,
     })
 
     print(f"\n{'='*60}")
+    checked_list = ", ".join(k.upper() for k, v in sources_checked.items() if v)
+    print(f"  Fontes verificadas: {checked_list or '-'}")
     if saved > 0:
-        print(f"  ✓ {saved} nova(s) publicação(ões) guardada(s) em '{csv_path}'")
+        print(f"  [OK] {saved} nova(s) publicacao(oes) guardada(s) em '{csv_path}'")
         if email_sent:
-            print(f"  ✓ Email de alerta enviado")
+            print(f"  [OK] Email de alerta enviado")
     else:
-        print(f"  — Sem novas publicações hoje")
+        print(f"  [-] Sem novas publicacoes hoje")
     print(f"{'='*60}\n")
 
-    return 0 if True else 1
+    return 0
 
 
 if __name__ == "__main__":
