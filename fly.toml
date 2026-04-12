@@ -1,16 +1,17 @@
-app = "monitor-stcw-br"
-primary_region = "gru"
+# fly.toml — Monitor STCW (Fly.io São Paulo/GRU)
+
+app = 'monitor-stcw-br'
+primary_region = 'gru'
 
 [build]
 
 [env]
-  TZ = "UTC"
+  TZ = 'UTC'
 
-# Processo único — cron daemon (sem HTTP)
 [processes]
-  app = "cron -f"
+  app = 'cron -f'
 
 [[vm]]
-  memory = "256mb"
-  cpu_kind = "shared"
+  memory = '256mb'
+  cpu_kind = 'shared'
   cpus = 1
